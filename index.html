@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+</head>
+
+<body class="container">
+    <div id="app" class="mt-2">
+        <button @click="ekle()" class="btn btn-success">
+            Ürün Ekle
+        </button>
+        <br>
+        <br>
+        <table class="table table-hover table-bordered" v-if="urunler.length > 0">
+            <tr>
+                <th>Ad</th>
+                <th>Barkod</th>
+                <th>Fiyat</th>
+                <th>İşlem</th>
+            </tr>
+            <tr v-for="urun in urunler">
+                <td>{{ urun.ad }}</td>
+                <td>{{ urun.barkod }}</td>
+                <td>{{ urun.fiyat }}₺</td>
+                <td>
+                    <button @click="duzenle(urun.id, urun.ad, urun.barkod, urun.fiyat)"
+                        class="btn btn-primary">Düzenle</button>
+                    <button @click="sil(urun.id)" class="btn btn-danger">Sil</button>
+                </td>
+            </tr>
+        </table>
+        <div v-else class="text-center">
+            <div>Hiç ürün yok!</div>
+            <div>Ürün eklemek için "Ürün Ekle" butonuna basın.</div>
+        </div>
+    </div>
+
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data: {
+                urunler: []
+            },
+            methods: {
+                ekle() {
+                    Swal.fire({
+                        title: 'Ürün Ekle',
+                        html: '<input placeholder="Ad" id="swal-input1" class="form-control m-2">' +
+                            '<input placeholder="Barkod" id="swal-input2" class="form-control m-2">' +
+                            '<input type="number" placeholder="Fiyat" id="swal-input3" class="form-control m-2">',
+                        focusConfirm: false,
+                        preConfirm: () => {
+                            return [
+                                document.getElementById('swal-input1').value,
+                                document.getElementById('swal-input2').value,
+                                document.getElementById('swal-input3').value
+                            ]
+                        },
+                        confirmButtonText: "Yeni Ürünü Ekle",
+                        confirmButtonColor: "#198754",
+                        showCloseButton: true
+                    }).then(res => {
+                        var ad = res.value[0];
+                        var barkod = res.value[1];
+                        var fiyat = res.value[2];
+                        if (ad && barkod && fiyat) {
+                            app.urunler.push({
+                                id: new Date() * 1,
+                                ad: ad,
+                                barkod: barkod,
+                                fiyat: fiyat
+                            });
+
+                            ls("urunler", app.urunler);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Dikkat!',
+                                text: 'Lütfen tüm alanları doldurun.',
+                                confirmButtonText: "Tamam",
+                                confirmButtonColor: "#198754"
+                            });
+                        }
+                    });
+                },
+                duzenle(id, ad, barkod, fiyat) {
+                    Swal.fire({
+                        title: 'Ürün Düzenle',
+                        html: '<input placeholder="Ad" value="' + ad +
+                            '" id="swal-input1" class="form-control m-2">' +
+                            '<input placeholder="Barkod" value="' + barkod +
+                            '" id="swal-input2" class="form-control m-2">' +
+                            '<input type="number" width="100%" placeholder="Fiyat" value="' + fiyat +
+                            '" id="swal-input3" class="form-control m-2">',
+                        focusConfirm: false,
+                        preConfirm: () => {
+                            return [
+                                document.getElementById('swal-input1').value,
+                                document.getElementById('swal-input2').value,
+                                document.getElementById('swal-input3').value
+                            ]
+                        },
+                        confirmButtonText: "Değişiklikleri Kaydet",
+                        confirmButtonColor: "#198754",
+                        showCloseButton: true
+                    }).then(res => {
+                        var _ad = res.value[0];
+                        var _barkod = res.value[1];
+                        var _fiyat = res.value[2];
+                        if (_ad && _barkod && _fiyat) {
+                            var index = app.urunler.findIndex(i => {
+                                return i.id == id
+                            });
+
+                            app.urunler[index].ad = _ad;
+                            app.urunler[index].barkod = _barkod;
+                            app.urunler[index].fiyat = _fiyat;
+
+                            ls("urunler", app.urunler);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Dikkat!',
+                                text: 'Lütfen tüm alanları doldurun.',
+                                confirmButtonText: "Tamam",
+                                confirmButtonColor: "#198754"
+                            });
+                        }
+                    });
+                },
+                sil(id) {
+                    Swal.fire({
+                        title: 'Emin misiniz?',
+                        text: "Ürünü silmek istediğinizden emin misiniz?",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#198754',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Evet Sil!',
+                        cancelButtonText: 'Hayır Silme!',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+
+                            var index = app.urunler.findIndex(i => {
+                                return i.id == id
+                            });
+                            app.urunler.splice(index, 1);
+
+                            ls("urunler", app.urunler);
+                        }
+                    });
+                }
+            },
+            created() {
+                this.urunler = ls("urunler");
+            }
+        });
+
+        function ls(key, obj) {
+            if (obj) {
+                localStorage.setItem(key, JSON.stringify(obj));
+            }
+            if (localStorage.getItem(key) != null) {
+                return JSON.parse(localStorage.getItem(key));
+            } else {
+                return [];
+            }
+        }
+    </script>
+</body>
+
+</html>
